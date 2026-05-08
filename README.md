@@ -1,4 +1,4 @@
-# 🏥 Payer Claims Risk Engine v4
+# 🏥 Payer Claims Risk Engine
 
 > **AI-powered denial management platform** — predicts resolution actions, AR days saved, success rates, and collection projections for healthcare insurance claims. Handles 2 lakh+ records in under 60 seconds with zero cloud dependency.
 
