@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Payer Claims Risk Engine — Dashboard v4</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,Arial,sans-serif;background:#f0f4f8;color:#1a1a2e;font-size:13px}
+/* HEADER */
+.hdr{background:linear-gradient(135deg,#1e3a5f 0%,#1d4ed8 100%);padding:22px 32px;display:flex;align-items:center;gap:14px}
+.hdr-logo{width:42px;height:42px;background:rgba(255,255,255,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff;border:1px solid rgba(255,255,255,.3)}
+.hdr-t h1{font-size:19px;font-weight:700;color:#fff;margin:0}
+.hdr-t p{font-size:11px;color:rgba(255,255,255,.65);margin-top:2px}
+.hdr-right{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.badge{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid rgba(255,255,255,.3);color:#fff}
+/* BODY */
+.body{padding:22px 32px}
+/* STAT CARDS */
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px}
+.kpi{background:#fff;border-radius:12px;padding:16px;border:1px solid #e2e8f0;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.kpi-v{font-size:24px;font-weight:700;margin-bottom:4px}
+.kpi-l{font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:.5px}
+.kpi-sub{font-size:11px;margin-top:4px;font-weight:500}
+.c-blue{color:#1d4ed8}.c-red{color:#b91c1c}.c-amber{color:#b45309}.c-green{color:#166534}.c-purple{color:#7c3aed}
+/* CARDS */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:18px}
+.card{background:#fff;border-radius:12px;padding:18px;border:1px solid #e2e8f0;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.card h3{font-size:13px;font-weight:600;color:#374151;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #f1f5f9}
+.ch{position:relative;height:210px}
+/* PILLS */
+.pill{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700}
+.p-h{background:#fee2e2;color:#b91c1c}.p-m{background:#fef9c3;color:#854d0e}
+.p-l{background:#dcfce7;color:#166534}.p-hi{background:#dcfce7;color:#166534}
+.p-md{background:#fef9c3;color:#854d0e}.p-lo{background:#fee2e2;color:#b91c1c}
+.p-b{background:#dbeafe;color:#1e40af}.p-g{background:#f0fdf4;color:#166534}
+.p-ind{background:#ede9fe;color:#5b21b6}
+/* TABS */
+.tabs{display:flex;border-bottom:1px solid #e2e8f0;margin-bottom:14px}
+.tab{padding:8px 16px;font-size:12px;font-weight:500;background:none;border:none;border-bottom:2px solid transparent;color:#64748b;cursor:pointer;margin-bottom:-1px}
+.tab.on{color:#1d4ed8;border-bottom-color:#1d4ed8;font-weight:600}
+.panel{display:none}.panel.on{display:block}
+/* TABLE */
+.tbl-wrap{max-height:360px;overflow-y:auto;border:1px solid #e2e8f0;border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:11px}
+th{padding:8px;text-align:left;color:#6b7280;border-bottom:1px solid #e2e8f0;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;background:#f8fafc;position:sticky;top:0;z-index:1}
+td{padding:7px 8px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+tr:hover td{background:#fafbfc}
+/* PAYER BARS */
+.pbar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.pbar-name{width:110px;font-size:11px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#374151}
+.pbar-track{flex:1;height:14px;background:#f1f5f9;border-radius:7px;overflow:hidden;display:flex}
+.ph{height:14px;background:#b91c1c}.pm{height:14px;background:#b45309}.pl{height:14px;background:#166534}
+.pbar-n{font-size:10px;color:#6b7280;width:24px;text-align:right}
+/* DENIAL TABLE */
+.dt-row{display:grid;grid-template-columns:80px 1fr 65px 65px 65px 90px;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid #f1f5f9;font-size:11px}
+.dt-hdr{font-size:9px;color:#6b7280;font-weight:600;text-transform:uppercase;border-bottom:1px solid #e2e8f0;padding-bottom:7px}
+.mini{height:7px;background:#e5e7eb;border-radius:4px;overflow:hidden}
+.mini-f{height:7px;background:#3b82f6;border-radius:4px}
+/* AR BARS */
+.ar-row{display:flex;align-items:center;gap:12px;padding:7px 10px;background:#f8fafc;border-radius:8px;margin-bottom:7px;border:1px solid #e2e8f0}
+.ar-cat{font-size:12px;font-weight:500;color:#374151;width:150px;flex-shrink:0}
+.ar-track{flex:1;height:10px;background:#e5e7eb;border-radius:5px;overflow:hidden}
+.ar-fill{height:10px;background:#1d4ed8;border-radius:5px}
+.ar-val{font-size:13px;font-weight:700;color:#1d4ed8;width:80px;text-align:right;flex-shrink:0}
+/* FILTERS */
+.filters{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
+.filters select,.filters input{padding:5px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;font-family:inherit;background:#fff}
+.btn{padding:5px 14px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid #d1d5db;background:#f9fafb;font-family:inherit}
+.btn-dl{background:#166534;color:#fff;border-color:#166534}
+.btn-dl:hover{background:#15803d}
+.row-count{font-size:11px;color:#6b7280;margin-left:auto}
+/* COLLECTION SUB-KPIS */
+.ckpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.ckpi{text-align:center;padding:12px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0}
+.ckpi-v{font-size:19px;font-weight:700;margin-bottom:2px}
+.ckpi-l{font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.4px}
+.footer{text-align:center;padding:14px 32px;color:#94a3b8;font-size:11px;border-top:1px solid #e2e8f0;background:#fff;margin-top:20px}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <div class="hdr-logo">RE</div>
+  <div class="hdr-t">
+    <h1>Payer Claims Risk Engine — Dashboard v4</h1>
+    <p>AR Days Saved · Success Rate · Collection Projection · No-Denial Analysis · Auto-Generated Dashboard</p>
+  </div>
+  <div class="hdr-right">
+    <span class="badge">● 15 Claims Analysed</span>
+    <span class="badge" style="background:rgba(22,101,52,.35)">55.3% Recovery Rate</span>
+    <span class="badge" style="background:rgba(124,58,237,.35)">103 Avg AR Days Saved</span>
+  </div>
+</div>
+
+<div class="body">
+
+<!-- KPI ROW -->
+<div class="kpi-row">
+  <div class="kpi"><div class="kpi-v c-blue">15</div><div class="kpi-l">Total Claims</div><div class="kpi-sub" style="color:#64748b">5 no-denial claims</div></div>
+  <div class="kpi"><div class="kpi-v c-red">3</div><div class="kpi-l">HIGH Risk</div><div class="kpi-sub c-red">20.0% of total</div></div>
+  <div class="kpi"><div class="kpi-v c-amber">103 days</div><div class="kpi-l">Avg AR Days Saved</div><div class="kpi-sub c-green">↓ vs manual baseline</div></div>
+  <div class="kpi"><div class="kpi-v c-green">$11,273</div><div class="kpi-l">Est. Total Collection</div><div class="kpi-sub" style="color:#64748b">55.3% success rate</div></div>
+  <div class="kpi"><div class="kpi-v c-purple">$9,107</div><div class="kpi-l">Est. Write-Off Risk</div><div class="kpi-sub c-red">Requires escalation</div></div>
+</div>
+
+<!-- CHARTS ROW 1 -->
+<div class="grid3">
+  <div class="card"><h3>📊 Risk Level Distribution</h3><div class="ch"><canvas id="riskC"></canvas></div></div>
+  <div class="card"><h3>🎯 Prediction Confidence</h3><div class="ch"><canvas id="confC"></canvas></div></div>
+  <div class="card"><h3>⚡ Action Categories</h3><div class="ch"><canvas id="actionC"></canvas></div></div>
+</div>
+
+<!-- PAYER + DENIAL -->
+<div class="grid2">
+  <div class="card">
+    <h3>🏥 Payer Risk Breakdown (H / M / L)</h3>
+    <div id="payerBars" style="max-height:260px;overflow-y:auto;padding-right:4px"></div>
+  </div>
+  <div class="card">
+    <h3>🔍 Denial Code Analysis</h3>
+    <div class="dt-row dt-hdr"><div>Code</div><div>Volume</div><div>Avg Days</div><div>AR Saved</div><div>Success</div><div>Collection</div></div>
+    <div id="denialRows" style="max-height:220px;overflow-y:auto"></div>
+  </div>
+</div>
+
+<!-- AR DAYS SAVED BY CATEGORY -->
+<div class="card" style="margin-bottom:18px">
+  <h3>⏱ AR Days Saved by Action Category</h3>
+  <div id="arBars"></div>
+</div>
+
+<!-- TABBED DETAIL -->
+<div class="card">
+  <div class="tabs">
+    <button class="tab on" onclick="goTab('claims',this)">📋 Claims Detail</button>
+    <button class="tab" onclick="goTab('collection',this)">💰 Collection Summary</button>
+    <button class="tab" onclick="goTab('nodenial',this)">🔎 No-Denial Claims</button>
+  </div>
+
+  <!-- CLAIMS TAB -->
+  <div class="panel on" id="tab-claims">
+    <div class="filters">
+      <select id="fRisk" onchange="filter()"><option value="">All Risk</option><option>HIGH</option><option>MEDIUM</option><option>LOW</option></select>
+      <select id="fConf" onchange="filter()"><option value="">All Confidence</option><option>High</option><option>Medium</option><option>Low</option></select>
+      <select id="fND" onchange="filter()"><option value="">All Claims</option><option value="Yes">No-Denial Only</option><option value="No">Denial Claims</option></select>
+      <input id="fSearch" placeholder="Search payer / CPT / denial / action..." oninput="filter()" style="min-width:220px">
+      <button class="btn btn-dl" onclick="dlCSV()">⬇ Download CSV</button>
+      <span class="row-count" id="rowCount"></span>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>Claim ID</th><th>Payer</th><th>CPT</th><th>DX</th><th>Denial</th>
+          <th>Predicted Action</th><th>Est Days</th><th>Risk</th><th>Conf</th>
+          <th>AR Saved</th><th>Success %</th><th>Collection $</th><th>Category</th><th>No-Denial</th>
+        </tr></thead>
+        <tbody id="tBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- COLLECTION TAB -->
+  <div class="panel" id="tab-collection">
+    <div class="ckpi-row">
+      <div class="ckpi"><div class="ckpi-v c-blue">$20,380.00</div><div class="ckpi-l">Total Charged</div></div>
+      <div class="ckpi"><div class="ckpi-v c-green">$11,273.00</div><div class="ckpi-l">Est. Collectible</div></div>
+      <div class="ckpi"><div class="ckpi-v c-red">$9,107.00</div><div class="ckpi-l">Est. Write-Off Risk</div></div>
+    </div>
+    <div class="ch" style="max-width:600px;margin:0 auto"><canvas id="collC"></canvas></div>
+  </div>
+
+  <!-- NO-DENIAL TAB -->
+  <div class="panel" id="tab-nodenial">
+    <p style="font-size:12px;color:#64748b;margin-bottom:12px">Claims without a denial code — action derived from prior activity notes.</p>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Claim ID</th><th>Payer</th><th>CPT</th><th>DX</th><th>Predicted Action</th><th>Est Days</th><th>Risk</th><th>AR Saved</th><th>Success %</th></tr></thead>
+        <tbody id="ndBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</div>
+<div class="footer">Payer Claims Risk Engine v4 · Generated 2026-05-08 10:21 · 15 claims analysed · All processing local — no data shared</div>
+
+<script>
+const RC={"LOW": 6, "MEDIUM": 6, "HIGH": 3};
+const CC={"High": 11, "Medium": 4};
+const AC={"Modifier": 10, "Adjust": 4, "Auth": 1};
+const PD={"Aetna": {"H": 0, "M": 0, "L": 3, "ar_saved": 68.3, "collect": 2116.0, "rate": "84.0%"}, "BCBS of GA": {"H": 0, "M": 1, "L": 0, "ar_saved": 75.0, "collect": 1080.0, "rate": "72.0%"}, "BCBS of SC": {"H": 0, "M": 1, "L": 0, "ar_saved": 55.0, "collect": 719.6, "rate": "51.4%"}, "BCBS of TX": {"H": 0, "M": 1, "L": 0, "ar_saved": 75.0, "collect": 864.0, "rate": "96.0%"}, "Cigna": {"H": 0, "M": 1, "L": 1, "ar_saved": 60.0, "collect": 988.68, "rate": "60.2%"}, "Humana": {"H": 1, "M": 0, "L": 0, "ar_saved": 218.0, "collect": 868.0, "rate": "28.0%"}, "Medicare": {"H": 1, "M": 1, "L": 1, "ar_saved": 116.0, "collect": 1976.32, "rate": "58.1%"}, "UHC": {"H": 1, "M": 1, "L": 1, "ar_saved": 148.0, "collect": 2660.4, "rate": "56.8%"}};
+const DD={"CO-18": {"count": 1, "avg_days": 180.0, "ar_saved": 190.0, "rate": "30.0%", "collect": 360.0}, "CO-197": {"count": 2, "avg_days": 102.5, "ar_saved": 70.0, "rate": "71.0%", "collect": 1605.0}, "CO-30": {"count": 2, "avg_days": 295.0, "ar_saved": 218.0, "rate": "28.0%", "collect": 1652.0}, "CO-4": {"count": 1, "avg_days": 90.0, "ar_saved": 92.0, "rate": "90.0%", "collect": 990.0}, "CO-50": {"count": 4, "avg_days": 83.8, "ar_saved": 72.5, "rate": "95.8%", "collect": 3332.3}};
+const AR={"Adjust": {"avg_saved": 197.0, "count": 4, "collect": 3322.4}, "Auth": {"avg_saved": 92.0, "count": 1, "collect": 990.0}, "Modifier": {"avg_saved": 66.0, "count": 10, "collect": 6960.6}};
+const ROWS=[{"Claim_ID": "CLM-001", "Payer_Name": "Aetna", "CPT_Code": "99215", "DX_Code": "M54.50", "Denial_Reason": "CO-50", "Predicted_Action": "Add 25 Modifier and resubmit the Claim", "Est_Resolution_Days": 65, "Risk_Level": "LOW", "Confidence": "High", "AR_Days_Saved": 75, "AR_Pct_Saved": "83.3%", "Est_Success_Rate": "96.0%", "Est_Collection_Amount": 912.0, "Est_Write_Off_Risk": 38.0, "Action_Category": "Modifier", "No_Denial_Claim": "No", "Match_Basis": "Denial:CO-50  \u00b7  CPT:99215  \u00b7  Payer:Aetna  \u00b7  DX-pfx:M54"}, {"Claim_ID": "CLM-002", "Payer_Name": "UHC", "CPT_Code": "17110", "DX_Code": "L82.10", "Denial_Reason": "CO-18", "Predicted_Action": "Adjust the Code \u2014 non-billable per coding team review", "Est_Resolution_Days": 180, "Risk_Level": "MEDIUM", "Confidence": "High", "AR_Days_Saved": 190, "AR_Pct_Saved": "95.0%", "Est_Success_Rate": "30.0%", "Est_Collection_Amount": 360.0, "Est_Write_Off_Risk": 840.0, "Action_Category": "Adjust", "No_Denial_Claim": "No", "Match_Basis": "Denial:CO-18  \u00b7  Payer:UHC"}, {"Claim_ID": "CLM-003", "Payer_Name": "Medicare", "CPT_Code": "64633", "DX_Code": "M47.816", "Denial_Reason": "CO-30", "Predicted_Action": "Adjust the Code \u2014 non-billable per Medicare policy", "Est_Resolution_Days": 280, "Risk_Level": "HIGH", "Confidence": "High", "AR_Days_Saved": 218, "AR_Pct_Saved": "109.0%", "Est_Success_Rate": "28.0%", "Est_Collection_Amount": 784.0, "Est_Write_Off_Risk": 2016.0, "Action_Category": "Adjust", "No_Denial_Claim": "No", "Match_Basis": "Denial:CO-30  \u00b7  CPT:64633  \u00b7  Payer:Medicare  \u00b7  DX-pfx:M47"}, {"Claim_ID": "CLM-004", "Payer_Name": "BCBS of GA", "CPT_Code": "17111", "DX_Code": "L82.10", "Denial_Reason": "CO-197", "Predicted_Action": "Add modifier and resubmit with Medical Records. Appeal if denied again", "Est_Resolution_Days": 150, "Risk_Level": "MEDIUM", "Confidence": "High", "AR_Days_Saved": 75, "AR_Pct_Saved": "83.3%", "Est_Success_Rate": "72.0%", "Est_Collection_Amount": 1080.0, "Est_Write_Off_Risk": 420.0, "Action_Category": "Modifier", "No_Denial_Claim": "No", "Match_Basis": "Denial:CO-197  \u00b7  CPT:17111  \u00b7  Family:bcbs  \u00b7  DX-pfx:L82"}, {"Claim_ID": "CLM-005", "Payer_Name": "Aetna", "CPT_Code": "18000", "DX_Code": "D44.90", "Denial_Reason": "CO-50", "Predicted_Action": "Add 25 Modifier and resubmit the Claim", "Est_Resolution_Days": 50, "Risk_Level": "LOW", "Confidence": "High", "AR_Days_Saved": 65, "AR_Pct_Saved": "72.2%", "Est_Success_Rate": "95.0%", "Est_Collection_Amount": 807.5, "Est_Write_Off_Risk": 42.5, "Action_Category": "Modifier", "No_Denial_Claim": "No", "Match_Basis": "Denial:CO-50  \u00b7  Payer:Aetna  \u00b7  DX-pfx:D44"}, {"Claim_ID": "CLM-006", "Payer_Name": "Cigna", "CPT_Code": "99213", "DX_Code": "J45.20", "Denial_Reason": "CO-197", "Predicted_Action": "Add 25 Modifier and resubmit the Claim", "Est_Resolution_Days": 55, "Risk_Level": "LOW", "Confidence": "High", "AR_Days_Saved": 65, "AR_Pct_Saved": "72.2%", "Est_Success_Rate": "70.0%", "Est_Collection_Amount": 525.0, "Est_Write_Off_Risk": 225.0, "Action_Category": "Modifier", "No_Denial_Claim": "No", "Match_Basis": "CPT:99213  \u00b7  Payer:Cigna  \u00b7  DX-pfx:J45"}, {"Claim_ID": "CLM-007", "Payer_Name": "Humana", "CPT_Code": "64690", "DX_Code": "M45.20", "Denial_Reason": "CO-30", "Predicted_Action": "Adjust the Code \u2014 non-billable per Humana policy", "Est_Resolution_Days": 310, "Risk_Level": "HIGH", "Confidence": "High", "AR_Days_Saved": 218, "AR_Pct_Saved": "109.0%", "Est_Success_Rate": "28.0%", "Est_Collection_Amount": 868.0, "Est_Write_Off_Risk": 2232.0, "Action_Category": "Adjust", "No_Denial_Claim": "No", "Match_Basis": "Denial:CO-30  \u00b7  CPT:64690  \u00b7  Payer:Humana  \u00b7  DX-pfx:M45"}, {"Claim_ID": "CLM-008", "Payer_Name": "BCBS of TX", "CPT_Code": "17000", "DX_Code": "D56.90", "Denial_Reason": "CO-50", "Predicted_Action": "Add 51 Modifier and resubmit the Claim", "Est_Resolution_Days": 100, "Risk_Level": "MEDIUM", "Confidence": "High", "AR_Days_Saved": 75, "AR_Pct_Saved": "83.3%", "Est_Success_Rate": "96.0%", "Est_Collection_Amount": 864.0, "Est_Write_Off_Risk": 36.0, "Action_Category": "Modifier", "No_Denial_Claim": "No", "Match_Basis": "Denial:CO-50  \u00b7  CPT:17000  \u00b7  Family:bcbs  \u00b7  DX-pfx:D56"}, {"Claim_ID": "CLM-009", "Payer_Name": "UHC", "CPT_Code": "99214", "DX_Code": "Z96.641", "Denial_Reason": "CO-4", "Predicted_Action": "Obtain prior authorization and resubmit with auth number", "Est_Resolution_Days": 90, "Risk_Level": "LOW", "Confidence": "High", "AR_Days_Saved": 92, "AR_Pct_Saved": "76.7%", "Est_Success_Rate": "90.0%", "Est_Collection_Amount": 990.0, "Est_Write_Off_Risk": 110.0, "Action_Category": "Auth", "No_Denial_Claim": "No", "Match_Basis": "Denial:CO-4  \u00b7  CPT:99214  \u00b7  Payer:UHC  \u00b7  DX-pfx:Z96"}, {"Claim_ID": "CLM-010", "Payer_Name": "Medicare", "CPT_Code": "17000", "DX_Code": "D56.90", "Denial_Reason": "CO-50", "Predicted_Action": "Add 51 Modifier and resubmit the Claim", "Est_Resolution_Days": 120, "Risk_Level": "MEDIUM", "Confidence": "High", "AR_Days_Saved": 75, "AR_Pct_Saved": "83.3%", "Est_Success_Rate": "96.0%", "Est_Collection_Amount": 748.8, "Est_Write_Off_Risk": 31.2, "Action_Category": "Modifier", "No_Denial_Claim": "No", "Match_Basis": "Denial:CO-50  \u00b7  CPT:17000  \u00b7  Payer:Medicare  \u00b7  DX-pfx:D56"}, {"Claim_ID": "CLM-011", "Payer_Name": "Aetna", "CPT_Code": "99213", "DX_Code": "D44.90", "Denial_Reason": "", "Predicted_Action": "Add 25 Modifier and resubmit the Claim", "Est_Resolution_Days": 50, "Risk_Level": "LOW", "Confidence": "High", "AR_Days_Saved": 65, "AR_Pct_Saved": "72.2%", "Est_Success_Rate": "61.0%", "Est_Collection_Amount": 396.5, "Est_Write_Off_Risk": 253.5, "Action_Category": "Modifier", "No_Denial_Claim": "Yes", "Match_Basis": "CPT:99213  \u00b7  Payer:Aetna  \u00b7  DX-pfx:D44"}, {"Claim_ID": "CLM-012", "Payer_Name": "BCBS of SC", "CPT_Code": "17111", "DX_Code": "L82.10", "Denial_Reason": "", "Predicted_Action": "Add modifier and resubmit with Medical Records. Appeal if denied again", "Est_Resolution_Days": 150, "Risk_Level": "MEDIUM", "Confidence": "Medium", "AR_Days_Saved": 55, "AR_Pct_Saved": "61.1%", "Est_Success_Rate": "51.4%", "Est_Collection_Amount": 719.6, "Est_Write_Off_Risk": 680.4, "Action_Category": "Modifier", "No_Denial_Claim": "Yes", "Match_Basis": "CPT:17111  \u00b7  Family:bcbs  \u00b7  DX-pfx:L82"}, {"Claim_ID": "CLM-013", "Payer_Name": "UHC", "CPT_Code": "64690", "DX_Code": "M45.20", "Denial_Reason": "", "Predicted_Action": "Adjust the Code \u2014 non-billable per coding team review", "Est_Resolution_Days": 330, "Risk_Level": "HIGH", "Confidence": "Medium", "AR_Days_Saved": 162, "AR_Pct_Saved": "81.0%", "Est_Success_Rate": "50.4%", "Est_Collection_Amount": 1310.4, "Est_Write_Off_Risk": 1289.6, "Action_Category": "Adjust", "No_Denial_Claim": "Yes", "Match_Basis": "CPT:64690  \u00b7  DX-pfx:M45"}, {"Claim_ID": "CLM-014", "Payer_Name": "Medicare", "CPT_Code": "99215", "DX_Code": "M54.50", "Denial_Reason": "", "Predicted_Action": "Add 25 Modifier and resubmit the Claim", "Est_Resolution_Days": 95, "Risk_Level": "LOW", "Confidence": "Medium", "AR_Days_Saved": 55, "AR_Pct_Saved": "61.1%", "Est_Success_Rate": "50.4%", "Est_Collection_Amount": 443.52, "Est_Write_Off_Risk": 436.48, "Action_Category": "Modifier", "No_Denial_Claim": "Yes", "Match_Basis": "CPT:99215  \u00b7  DX-pfx:M54"}, {"Claim_ID": "CLM-015", "Payer_Name": "Cigna", "CPT_Code": "17000", "DX_Code": "D56.90", "Denial_Reason": "", "Predicted_Action": "Add 51 Modifier and resubmit the Claim", "Est_Resolution_Days": 130, "Risk_Level": "MEDIUM", "Confidence": "Medium", "AR_Days_Saved": 55, "AR_Pct_Saved": "61.1%", "Est_Success_Rate": "50.4%", "Est_Collection_Amount": 463.68, "Est_Write_Off_Risk": 456.32, "Action_Category": "Modifier", "No_Denial_Claim": "Yes", "Match_Basis": "CPT:17000  \u00b7  DX-pfx:D56"}];
+let filtered=[...ROWS];
+
+// ── Charts ──────────────────────────────────────────────────────────
+new Chart(document.getElementById('riskC'),{type:'doughnut',
+  data:{labels:Object.keys(RC),datasets:[{data:Object.values(RC),
+    backgroundColor:['#b91c1c','#b45309','#166534'],borderColor:'#fff',borderWidth:3}]},
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'right',labels:{font:{size:11}}}}}
+});
+
+new Chart(document.getElementById('confC'),{type:'bar',
+  data:{labels:Object.keys(CC),datasets:[{data:Object.values(CC),
+    backgroundColor:['#166534','#b45309','#b91c1c'],borderRadius:6,borderSkipped:false}]},
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{y:{beginAtZero:true,grid:{color:'#f1f5f9'}},x:{grid:{display:false}}}}
+});
+
+new Chart(document.getElementById('actionC'),{type:'bar',
+  data:{labels:Object.keys(AC),datasets:[{data:Object.values(AC),
+    backgroundColor:'#3b82f6',borderRadius:4,borderSkipped:false}]},
+  options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{x:{beginAtZero:true,grid:{color:'#f1f5f9'}},y:{grid:{display:false},ticks:{font:{size:10}}}}}
+});
+
+new Chart(document.getElementById('collC'),{type:'bar',
+  data:{labels:['Total Charged','Est. Collection','Est. Write-Off'],
+    datasets:[{data:[20380.0,11273.0,9107.0],
+      backgroundColor:['#1d4ed8','#166534','#b91c1c'],borderRadius:8,borderSkipped:false}]},
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'$'+ctx.raw.toLocaleString('en-US',{minimumFractionDigits:2})}}},
+    scales:{y:{beginAtZero:true,ticks:{callback:v=>'$'+v.toLocaleString()},grid:{color:'#f1f5f9'}},x:{grid:{display:false}}}}
+});
+
+// ── Payer bars ──────────────────────────────────────────────────────
+const pbWrap=document.getElementById('payerBars');
+Object.entries(PD).sort((a,b)=>(b[1].H+b[1].M+b[1].L)-(a[1].H+a[1].M+a[1].L)).forEach(([name,d])=>{
+  const tot=(d.H+d.M+d.L)||1;
+  pbWrap.innerHTML+=`<div class="pbar-row">
+    <div class="pbar-name" title="${name}">${name}</div>
+    <div class="pbar-track">
+      <div class="ph" style="width:${d.H/tot*100}%"></div>
+      <div class="pm" style="width:${d.M/tot*100}%"></div>
+      <div class="pl" style="width:${d.L/tot*100}%"></div>
+    </div>
+    <div class="pbar-n">${tot}</div>
+  </div>`;
+});
+
+// ── Denial rows ─────────────────────────────────────────────────────
+const maxCnt=Math.max(...Object.values(DD).map(d=>d.count),1);
+const drWrap=document.getElementById('denialRows');
+Object.entries(DD).sort((a,b)=>b[1].count-a[1].count).forEach(([code,d])=>{
+  drWrap.innerHTML+=`<div class="dt-row">
+    <div><span class="pill p-h">${code}</span></div>
+    <div><div class="mini"><div class="mini-f" style="width:${d.count/maxCnt*100}%"></div></div>
+         <span style="font-size:10px;color:#6b7280">${d.count}</span></div>
+    <div style="font-weight:600">${d.avg_days}d</div>
+    <div style="font-weight:600;color:#1d4ed8">${d.ar_saved}d</div>
+    <div style="font-weight:600;color:#166534">${d.rate}</div>
+    <div style="font-weight:600">$${d.collect.toLocaleString('en-US',{minimumFractionDigits:2})}</div>
+  </div>`;
+});
+
+// ── AR bars ─────────────────────────────────────────────────────────
+const maxAR=Math.max(...Object.values(AR).map(v=>v.avg_saved),1);
+const arWrap=document.getElementById('arBars');
+Object.entries(AR).sort((a,b)=>b[1].avg_saved-a[1].avg_saved).forEach(([cat,d])=>{
+  arWrap.innerHTML+=`<div class="ar-row">
+    <div class="ar-cat">${cat} <span style="font-size:10px;color:#6b7280">(${d.count} claims)</span></div>
+    <div class="ar-track"><div class="ar-fill" style="width:${d.avg_saved/maxAR*100}%"></div></div>
+    <div class="ar-val">${d.avg_saved} days</div>
+  </div>`;
+});
+
+// ── Table rendering ─────────────────────────────────────────────────
+function riskClass(r){return r==='HIGH'?'p-h':r==='MEDIUM'?'p-m':'p-l'}
+function confClass(c){return c==='High'?'p-hi':c==='Medium'?'p-md':'p-lo'}
+
+function renderTable(rows, tbodyId){
+  const tb=document.getElementById(tbodyId);
+  tb.innerHTML=rows.map(r=>`<tr>
+    <td style="font-family:monospace;font-size:10px">${r.Claim_ID||'—'}</td>
+    <td><strong>${r.Payer_Name||r.payer||'—'}</strong></td>
+    <td><span class="pill p-b">${r.CPT_Code||r.cpt||'—'}</span></td>
+    <td style="font-family:monospace;font-size:10px">${r.DX_Code||r.dx||'—'}</td>
+    <td><span class="pill p-h">${r.Denial_Reason||r.denial||'—'}</span></td>
+    <td style="max-width:200px;white-space:normal;font-size:10px">${r.Predicted_Action||'—'}</td>
+    <td style="text-align:center;font-weight:600">${r.Est_Resolution_Days||'—'}</td>
+    <td><span class="pill ${riskClass(r.Risk_Level)}">${r.Risk_Level||'—'}</span></td>
+    <td><span class="pill ${confClass(r.Confidence)}">${r.Confidence||'—'}</span></td>
+    <td style="text-align:center;font-weight:700;color:#1d4ed8">${r.AR_Days_Saved||'—'}</td>
+    <td style="text-align:center;font-weight:600;color:#166534">${r.Est_Success_Rate||'—'}</td>
+    <td style="text-align:right;font-weight:600">$${(r.Est_Collection_Amount||0).toLocaleString('en-US',{minimumFractionDigits:2})}</td>
+    <td><span class="pill p-ind">${r.Action_Category||'—'}</span></td>
+    <td style="text-align:center">${r.No_Denial_Claim==='Yes'?'<span class="pill p-g">Yes</span>':'No'}</td>
+  </tr>`).join('');
+}
+
+function renderNDTable(rows){
+  const tb=document.getElementById('ndBody');
+  tb.innerHTML=rows.filter(r=>r.No_Denial_Claim==='Yes').map(r=>`<tr>
+    <td style="font-family:monospace;font-size:10px">${r.Claim_ID||'—'}</td>
+    <td><strong>${r.Payer_Name||'—'}</strong></td>
+    <td><span class="pill p-b">${r.CPT_Code||'—'}</span></td>
+    <td style="font-family:monospace;font-size:10px">${r.DX_Code||'—'}</td>
+    <td style="max-width:220px;white-space:normal;font-size:10px">${r.Predicted_Action||'—'}</td>
+    <td style="text-align:center;font-weight:600">${r.Est_Resolution_Days||'—'}</td>
+    <td><span class="pill ${riskClass(r.Risk_Level)}">${r.Risk_Level||'—'}</span></td>
+    <td style="text-align:center;font-weight:700;color:#1d4ed8">${r.AR_Days_Saved||'—'}</td>
+    <td style="text-align:center;font-weight:600;color:#166534">${r.Est_Success_Rate||'—'}</td>
+  </tr>`).join('');
+}
+
+function filter(){
+  const risk=document.getElementById('fRisk').value;
+  const conf=document.getElementById('fConf').value;
+  const nd=document.getElementById('fND').value;
+  const q=document.getElementById('fSearch').value.toLowerCase();
+  filtered=ROWS.filter(r=>{
+    return (!risk||r.Risk_Level===risk)&&
+           (!conf||r.Confidence===conf)&&
+           (!nd||r.No_Denial_Claim===nd)&&
+           (!q||(r.Payer_Name||'').toLowerCase().includes(q)||
+                (r.CPT_Code||'').toLowerCase().includes(q)||
+                (r.Denial_Reason||'').toLowerCase().includes(q)||
+                (r.Predicted_Action||'').toLowerCase().includes(q));
+  });
+  renderTable(filtered,'tBody');
+  document.getElementById('rowCount').textContent=filtered.length+' rows shown';
+}
+
+function dlCSV(){
+  if(!filtered.length){alert('No data.');return;}
+  const keys=Object.keys(filtered[0]).filter(k=>!k.startsWith('_'));
+  const csv=[keys.join(','),...filtered.map(r=>keys.map(k=>{
+    const v=r[k]===null||r[k]===undefined?'':String(r[k]);
+    return v.includes(',')||v.includes('"')?'"'+v.replace(/"/g,'""')+'"':v;
+  }).join(','))].join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='payer_risk_results.csv';a.click();
+}
+
+function goTab(id,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('tab-'+id).classList.add('on');
+  btn.classList.add('on');
+}
+
+renderTable(ROWS,'tBody');
+renderNDTable(ROWS);
+document.getElementById('rowCount').textContent=ROWS.length+' rows shown';
+</script>
+</body>
+</html>

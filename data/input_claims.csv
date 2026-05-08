@@ -1,0 +1,16 @@
+Claim_ID,Payer_Name,CPT_Code,DX_Code,Denial_Reason,Notes,Charge_Amount
+CLM-001,Aetna,99215,M54.50,CO-50,,950.00
+CLM-002,UHC,17110,L82.10,CO-18,,1200.00
+CLM-003,Medicare,64633,M47.816,CO-30,,2800.00
+CLM-004,BCBS of GA,17111,L82.10,CO-197,,1500.00
+CLM-005,Aetna,18000,D44.90,CO-50,,850.00
+CLM-006,Cigna,99213,J45.20,CO-197,,750.00
+CLM-007,Humana,64690,M45.20,CO-30,,3100.00
+CLM-008,BCBS of TX,17000,D56.90,CO-50,,900.00
+CLM-009,UHC,99214,Z96.641,CO-4,,1100.00
+CLM-010,Medicare,17000,D56.90,CO-50,,780.00
+CLM-011,Aetna,99213,D44.90,,"Added 25 modifier previously — claim pending review",650.00
+CLM-012,BCBS of SC,17111,L82.10,,"Prior appeal with MR was submitted — awaiting decision",1400.00
+CLM-013,UHC,64690,M45.20,,"Coding team reviewed — non-billable noted in last activity",2600.00
+CLM-014,Medicare,99215,M54.50,,"Resubmitted corrected claim with modifier 30 days ago",880.00
+CLM-015,Cigna,17000,D56.90,,"Authorization was obtained and resubmitted last month",920.00
